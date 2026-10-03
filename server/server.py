@@ -82,7 +82,7 @@ def get_video_info():
         "skip_download": True,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "tv"]
+                "player_client": ["web_safari", "web_embedded", "mweb", "android", "ios"]
             }
         },
         "http_headers": get_random_headers()
@@ -146,12 +146,12 @@ def download_mp3():
 
     temp_target = CACHE_DIR / f"{cache_key}"
     ydl_opts = {
-        "format": "bestaudio/best",
+        "format": "ba/b",
         "outtmpl": str(temp_target) + ".%(ext)s",
         "ffmpeg_location": FFMPEG_PATH,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "tv"]
+                "player_client": ["web_safari", "web_embedded", "mweb", "android", "ios"]
             }
         },
         "http_headers": get_random_headers(),
