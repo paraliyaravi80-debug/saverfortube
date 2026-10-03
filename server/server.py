@@ -82,8 +82,7 @@ def get_video_info():
         "skip_download": True,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "tv"],
-                "player_skip": ["webpage", "configs"]
+                "player_client": ["android", "ios", "tv"]
             }
         },
         "http_headers": get_random_headers()
@@ -152,8 +151,7 @@ def download_mp3():
         "ffmpeg_location": FFMPEG_PATH,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "tv"],
-                "player_skip": ["webpage", "configs"]
+                "player_client": ["android", "ios", "tv"]
             }
         },
         "http_headers": get_random_headers(),
