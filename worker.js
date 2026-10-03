@@ -1,4 +1,6 @@
-// Cloudflare Worker: 100% Serverless Ultra-High Speed YouTube Audio Converter Engine
+// Cloudflare Worker: Static Asset Serving + Render High-Speed MP3 Converter Backend Proxy
+const BACKEND_URL = 'https://saverfortube-backend.onrender.com';
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -15,181 +17,82 @@ export default {
       });
     }
 
-    // Helper: Extract YouTube ID
-    function getYouTubeID(inputUrl) {
-      if (!inputUrl) return null;
-      const clean = inputUrl.trim();
-      const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
-      const m = clean.match(reg);
-      return (m && m[2].length === 11) ? m[2] : null;
-    }
-
-    // Helper: Sanitize title for filename
-    function sanitizeTitle(str) {
-      if (!str) return 'YouTube_Audio';
-      return str
-        .replace(/[^a-zA-Z0-9 _-]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 65);
-    }
-
-    // Top verified high-speed global resolver instances
-    const RESOLVER_NODES = [
-      'https://invidious.f5.si',
-      'https://inv.bp.projectsegfau.lt',
-      'https://invidious.materialio.us',
-      'https://invidious.private.coffee',
-      'https://invidious.einfachzocken.eu',
-      'https://yt.drgnz.club'
-    ];
-
-    // Concurrent race resolver: returns first winning node in <200ms
-    async function resolveFastestAudio(videoId) {
-      const promises = RESOLVER_NODES.map(async (node) => {
-        const res = await fetch(node + '/api/v1/videos/' + videoId, {
-          headers: { 'User-Agent': 'Mozilla/5.0' },
-          signal: AbortSignal.timeout(3500)
-        });
-        if (!res.ok) throw new Error('Node busy');
-        const data = await res.json();
-        const adaptiveFormats = data.adaptiveFormats || [];
-        const audios = adaptiveFormats.filter(f => (f.type || f.mimeType || '').includes('audio') && f.url);
-        if (audios.length === 0) throw new Error('No audio');
-        
-        audios.sort((a, b) => (parseInt(b.bitrate || '0', 10) - parseInt(a.bitrate || '0', 10)));
-        return {
-          title: data.title || ('YouTube_Audio_' + videoId),
-          streamUrl: audios[0].url,
-          duration: data.lengthSeconds || 0,
-          author: data.author || 'YouTube Creator'
-        };
-      });
-
-      try {
-        return await Promise.any(promises);
-      } catch (err) {
-        return null;
-      }
-    }
-
-    // 1. /api/info Endpoint - Real metadata
+    // 1. /api/info Endpoint Proxy
     if (url.pathname === '/api/info') {
       const targetUrl = url.searchParams.get('url');
-      const videoId = getYouTubeID(targetUrl);
-
-      if (!videoId) {
+      if (!targetUrl) {
         return new Response(JSON.stringify({ error: 'Missing YouTube URL' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
       }
 
-      // Instant oEmbed
       try {
-        const oembedRes = await fetch('https://noembed.com/embed?url=https://www.youtube.com/watch?v=' + videoId, {
-          signal: AbortSignal.timeout(2000)
+        const backendRes = await fetch(BACKEND_URL + '/api/info?url=' + encodeURIComponent(targetUrl), {
+          signal: AbortSignal.timeout(6000)
         });
-        if (oembedRes.ok) {
-          const data = await oembedRes.json();
-          if (data && data.title) {
-            return new Response(JSON.stringify({
-              success: true,
-              video_id: videoId,
-              title: data.title,
-              author: data.author_name || 'YouTube Creator',
-              thumbnail: 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg',
-              duration_formatted: ''
-            }), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-            });
-          }
+        if (backendRes.ok) {
+          const data = await backendRes.json();
+          return new Response(JSON.stringify(data), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+          });
         }
       } catch (_) {}
 
-      // Fast race resolver
-      const resolved = await resolveFastestAudio(videoId);
-      if (resolved) {
-        const dur = resolved.duration;
-        const mins = Math.floor(dur / 60);
-        const secs = dur % 60;
-        const durFormatted = dur ? (mins + ':' + (secs < 10 ? '0' : '') + secs) : '';
-
+      // Fallback oEmbed
+      try {
+        const oembedRes = await fetch('https://noembed.com/embed?url=' + encodeURIComponent(targetUrl));
+        const data = await oembedRes.json();
         return new Response(JSON.stringify({
           success: true,
-          video_id: videoId,
-          title: resolved.title,
-          author: resolved.author,
-          thumbnail: 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg',
-          duration_formatted: durFormatted
+          title: data.title || 'YouTube Audio Track',
+          author: data.author_name || 'YouTube Creator',
+          thumbnail: 'https://img.youtube.com/vi/default/hqdefault.jpg'
         }), {
           status: 200,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
-      }
-
-      return new Response(JSON.stringify({
-        success: true,
-        video_id: videoId,
-        title: 'YouTube Track (' + videoId + ')',
-        author: 'YouTube Creator',
-        thumbnail: 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg',
-        duration_formatted: ''
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-      });
+      } catch (_) {}
     }
 
-    // 2. /api/download Endpoint - Lightning-Speed Serverless Audio Stream Pipeline
+    // 2. /api/download Endpoint Proxy
     if (url.pathname === '/api/download') {
       const targetUrl = url.searchParams.get('url');
       const quality = url.searchParams.get('quality') || '320';
-      const videoId = getYouTubeID(targetUrl);
 
-      if (!videoId) {
+      if (!targetUrl) {
         return new Response(JSON.stringify({ error: 'Missing YouTube URL' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         });
       }
 
-      const resolved = await resolveFastestAudio(videoId);
+      try {
+        const streamUrl = BACKEND_URL + '/api/download?url=' + encodeURIComponent(targetUrl) + '&quality=' + quality;
+        const backendRes = await fetch(streamUrl);
 
-      if (resolved && resolved.streamUrl) {
-        try {
-          const audioRes = await fetch(resolved.streamUrl, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-              'Accept': '*/*',
-              'Referer': 'https://www.youtube.com/'
-            }
+        if (backendRes.ok) {
+          const respHeaders = new Headers();
+          respHeaders.set('Content-Type', 'audio/mpeg');
+          respHeaders.set('Access-Control-Allow-Origin', '*');
+          respHeaders.set('Cache-Control', 'public, max-age=7200');
+
+          const cd = backendRes.headers.get('content-disposition');
+          if (cd) respHeaders.set('Content-Disposition', cd);
+
+          const cl = backendRes.headers.get('content-length');
+          if (cl) respHeaders.set('Content-Length', cl);
+
+          return new Response(backendRes.body, {
+            status: 200,
+            headers: respHeaders
           });
-
-          if (audioRes.ok) {
-            const cleanTitle = sanitizeTitle(resolved.title);
-            const filename = cleanTitle + ' (' + quality + 'kbps).mp3';
-
-            const respHeaders = new Headers();
-            respHeaders.set('Content-Type', 'audio/mpeg');
-            respHeaders.set('Content-Disposition', 'attachment; filename="' + encodeURIComponent(filename) + '"');
-            respHeaders.set('Access-Control-Allow-Origin', '*');
-            respHeaders.set('Cache-Control', 'public, max-age=7200');
-
-            const cl = audioRes.headers.get('content-length');
-            if (cl) respHeaders.set('Content-Length', cl);
-
-            return new Response(audioRes.body, {
-              status: 200,
-              headers: respHeaders
-            });
-          }
-        } catch (e) {}
-      }
+        }
+      } catch (e) {}
 
       return new Response(JSON.stringify({
-        error: 'Audio stream busy. Please try again.',
+        error: 'Engine starting up. Please retry in a few seconds.',
         success: false
       }), {
         status: 502,

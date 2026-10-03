@@ -24,11 +24,9 @@ try:
 except Exception:
     FFMPEG_PATH = "ffmpeg"
 
-# Rotating User-Agents
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"
 ]
 
@@ -84,7 +82,8 @@ def get_video_info():
         "skip_download": True,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "tv"]
+                "player_client": ["android", "ios", "tv"],
+                "player_skip": ["webpage", "configs"]
             }
         },
         "http_headers": get_random_headers()
@@ -93,7 +92,6 @@ def get_video_info():
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(canonical_url, download=False)
-            
             duration_secs = info.get("duration") or 0
             title = info.get("title") or "YouTube Track"
             author = info.get("uploader") or info.get("channel") or "YouTube Creator"
@@ -136,7 +134,6 @@ def download_mp3():
     cache_key = f"{video_id}_{quality}kbps"
     cached_file = CACHE_DIR / f"{cache_key}.mp3"
 
-    # Instant Cache Retrieval
     if cached_file.exists() and cached_file.stat().st_size > 50000:
         meta_file = CACHE_DIR / f"{video_id}.title"
         title = meta_file.read_text("utf-8") if meta_file.exists() else f"track_{video_id}"
@@ -148,7 +145,6 @@ def download_mp3():
             download_name=download_name
         )
 
-    # Conversion Pipeline with yt-dlp & FFmpeg
     temp_target = CACHE_DIR / f"{cache_key}"
     ydl_opts = {
         "format": "bestaudio/best",
@@ -156,7 +152,8 @@ def download_mp3():
         "ffmpeg_location": FFMPEG_PATH,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "tv"]
+                "player_client": ["android", "ios", "tv"],
+                "player_skip": ["webpage", "configs"]
             }
         },
         "http_headers": get_random_headers(),
