@@ -1,0 +1,278 @@
+---
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '/' } = Astro.props;
+
+const navItems = [
+  { name: 'Home', href: '/' },
+  { name: 'About Us', href: '/about-us' },
+  { name: 'Contact', href: '/contact' },
+];
+
+const languages = [
+  { name: 'English', code: 'EN', href: '/' },
+  { name: 'Español', code: 'ES', href: '/es' },
+  { name: 'Português', code: 'PT', href: '/pt' },
+  { name: 'Bahasa Indonesia', code: 'ID', href: '/id' },
+  { name: 'Français', code: 'FR', href: '/fr' },
+  { name: 'Deutsch', code: 'DE', href: '/de' },
+  { name: 'Italiano', code: 'IT', href: '/it' },
+  { name: 'Türkçe', code: 'TR', href: '/tr' },
+  { name: 'Русский', code: 'RU', href: '/ru' },
+  { name: '日本語', code: 'JA', href: '/ja' },
+  { name: '한국어', code: 'KO', href: '/ko' },
+  { name: 'العربية', code: 'AR', href: '/ar' },
+  { name: 'Tiếng Việt', code: 'VI', href: '/vi' },
+  { name: 'Polski', code: 'PL', href: '/pl' },
+  { name: 'ภาษาไทย', code: 'TH', href: '/th' },
+  { name: 'Nederlands', code: 'NL', href: '/nl' },
+];
+
+// Determine active language
+const pathSegment = currentPath.split('/')[1] || '';
+const currentLangObj = languages.find((l) => l.href === `/${pathSegment}`) || languages[0];
+const currentLang = currentLangObj.code;
+---
+
+<header class="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <!-- Brand Logo -->
+    <a href="/" class="flex items-center gap-3 group outline-none" aria-label="Saver For TUBE Home">
+      <img
+        src="/favicon.svg"
+        alt="Saver For TUBE Logo"
+        class="w-9 sm:w-10 h-9 sm:h-10 rounded-lg shrink-0 object-contain"
+        width="40"
+        height="40"
+        loading="eager"
+      />
+      <div class="flex flex-col">
+        <span class="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-1.5">
+          Saver For <span class="text-red-600 dark:text-red-500 font-extrabold">TUBE</span>
+        </span>
+      </div>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center gap-1" aria-label="Main Navigation">
+      {navItems.map((item) => {
+        const isActive = currentPath === item.href;
+        return (
+          <a
+            href={item.href}
+            title={item.name}
+            class={
+              isActive
+                ? 'px-3 py-1.5 text-sm font-semibold rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800/80'
+                : 'px-3 py-1.5 text-sm font-medium rounded-md text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+            }
+          >
+            {item.name}
+          </a>
+        );
+      })}
+    </nav>
+
+    <!-- Header Actions (Language Switcher + Theme Toggle + Mobile Menu Button) -->
+    <div class="flex items-center gap-2">
+      
+      <!-- Language Dropdown Switcher (Desktop & Mobile) -->
+      <div class="relative" id="lang-dropdown-wrapper">
+        <button
+          id="lang-toggle-btn"
+          type="button"
+          aria-label="Select Language"
+          aria-expanded="false"
+          class="h-9 px-2.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+        >
+          <!-- Globe Icon -->
+          <svg class="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+          <span>{currentLang}</span>
+          <svg id="lang-arrow" class="w-3 h-3 text-zinc-400 shrink-0 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          id="lang-menu"
+          class="hidden absolute right-0 mt-1.5 w-56 max-h-80 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1.5 z-50"
+        >
+          <div class="px-2.5 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800 mb-1">
+            Select Language (16 Languages)
+          </div>
+          <div class="space-y-0.5">
+            {languages.map((lang) => {
+              const isSelected = currentLang === lang.code;
+              return (
+                <a
+                  href={lang.href}
+                  class={
+                    isSelected
+                      ? 'flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60'
+                      : 'flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white'
+                  }
+                >
+                  <span>{lang.name}</span>
+                  <span class="text-[10px] font-mono uppercase text-zinc-400 dark:text-zinc-500">{lang.code}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark/Light Theme Toggle -->
+      <button
+        id="theme-toggle"
+        type="button"
+        aria-label="Toggle theme"
+        class="w-9 h-9 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center cursor-pointer"
+      >
+        <!-- Sun Icon (shown in dark mode) -->
+        <svg class="w-4 h-4 hidden dark:block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <!-- Moon Icon (shown in light mode) -->
+        <svg class="w-4 h-4 block dark:hidden text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      </button>
+
+      <!-- Mobile Hamburger Button -->
+      <button
+        id="mobile-menu-btn"
+        type="button"
+        aria-label="Toggle navigation menu"
+        class="md:hidden w-9 h-9 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center cursor-pointer"
+      >
+        <svg id="menu-icon-open" class="w-5 h-5 block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="menu-icon-close" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-3 space-y-3">
+    <div class="space-y-1">
+      {navItems.map((item) => {
+        const isActive = currentPath === item.href;
+        return (
+          <a
+            href={item.href}
+            title={item.name}
+            class={
+              isActive
+                ? 'block px-3 py-2 text-sm font-semibold rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800/80'
+                : 'block px-3 py-2 text-sm font-medium rounded-md text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900'
+            }
+          >
+            {item.name}
+          </a>
+        );
+      })}
+    </div>
+
+    <!-- Mobile Language Selector Section -->
+    <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+      <div class="px-1 py-1 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+        Languages (16)
+      </div>
+      <div class="grid grid-cols-2 gap-1 pt-1 max-h-48 overflow-y-auto">
+        {languages.map((lang) => {
+          const isSelected = currentLang === lang.code;
+          return (
+            <a
+              href={lang.href}
+              class={
+                isSelected
+                  ? 'flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60'
+                  : 'flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+              }
+            >
+              <span class="truncate">{lang.name}</span>
+              <span class="text-[10px] font-mono text-zinc-400">{lang.code}</span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  // Theme toggle
+  var themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.onclick = function() {
+      var isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    };
+  }
+
+  // Mobile menu toggle
+  var menuBtn = document.getElementById('mobile-menu-btn');
+  var mobileMenu = document.getElementById('mobile-menu');
+  var menuIconOpen = document.getElementById('menu-icon-open');
+  var menuIconClose = document.getElementById('menu-icon-close');
+
+  if (menuBtn && mobileMenu && menuIconOpen && menuIconClose) {
+    menuBtn.onclick = function() {
+      var isHidden = mobileMenu.classList.toggle('hidden');
+      if (isHidden) {
+        menuIconOpen.classList.remove('hidden');
+        menuIconClose.classList.add('hidden');
+      } else {
+        menuIconOpen.classList.add('hidden');
+        menuIconClose.classList.remove('hidden');
+      }
+    };
+  }
+
+  // Language Dropdown Toggle & Click Outside Handler
+  var langBtn = document.getElementById('lang-toggle-btn');
+  var langMenu = document.getElementById('lang-menu');
+  var langArrow = document.getElementById('lang-arrow');
+
+  if (langBtn && langMenu) {
+    langBtn.onclick = function(e) {
+      e.stopPropagation();
+      var isClosed = langMenu.classList.toggle('hidden');
+      if (langArrow) {
+        langArrow.style.transform = isClosed ? 'rotate(0deg)' : 'rotate(180deg)';
+      }
+      langBtn.setAttribute('aria-expanded', !isClosed);
+    };
+
+    document.addEventListener('click', function(e) {
+      if (!langMenu.classList.contains('hidden')) {
+        var wrapper = document.getElementById('lang-dropdown-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+          langMenu.classList.add('hidden');
+          if (langArrow) {
+            langArrow.style.transform = 'rotate(0deg)';
+          }
+          langBtn.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !langMenu.classList.contains('hidden')) {
+        langMenu.classList.add('hidden');
+        if (langArrow) {
+          langArrow.style.transform = 'rotate(0deg)';
+        }
+        langBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+</script>

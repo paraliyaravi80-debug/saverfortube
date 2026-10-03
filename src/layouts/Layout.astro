@@ -1,23 +1,188 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  lang?: string;
+  jsonLd?: Record<string, any> | Record<string, any>[];
+}
+
+const {
+  title = 'YouTube to MP3 Converter - Saver For TUBE',
+  description = 'Convert YouTube videos and shorts into high-quality MP3 audio (up to 320kbps) online for free. Fast, clean, safe, and unlimited on Saver For TUBE.',
+  canonicalUrl = Astro.url.href,
+  ogImage = 'https://saverfortube.com/og-image.png',
+  lang = 'en',
+  jsonLd,
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+
+// Base Sitelinks, WebSite & Organization Structured Data
+const baseSchemaGraph = [
+  {
+    "@type": "WebSite",
+    "@id": "https://saverfortube.com/#website",
+    "url": "https://saverfortube.com/",
+    "name": "Saver For TUBE",
+    "alternateName": ["SaverForTube", "Saver For TUBE MP3", "SaverForTube.com"],
+    "description": "The fastest, cleanest online YouTube to MP3 audio converter supporting up to 320kbps high-quality studio sound.",
+    "inLanguage": lang,
+    "publisher": {
+      "@id": "https://saverfortube.com/#organization"
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://saverfortube.com/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@type": "Organization",
+    "@id": "https://saverfortube.com/#organization",
+    "name": "Saver For TUBE",
+    "url": "https://saverfortube.com/",
+    "logo": {
+      "@type": "ImageObject",
+      "@id": "https://saverfortube.com/#logo",
+      "url": "https://saverfortube.com/favicon.svg",
+      "caption": "Saver For TUBE Logo",
+      "width": "512",
+      "height": "512"
+    },
+    "image": {
+      "@id": "https://saverfortube.com/#logo"
+    }
+  },
+  {
+    "@type": "SiteNavigationElement",
+    "@id": "https://saverfortube.com/#nav-home",
+    "name": "YouTube to MP3 Converter",
+    "description": "Convert and download YouTube videos into 320kbps MP3 audio.",
+    "url": "https://saverfortube.com/"
+  },
+  {
+    "@type": "SiteNavigationElement",
+    "@id": "https://saverfortube.com/#nav-about",
+    "name": "About Us",
+    "description": "Learn more about the team, mission, and audio conversion technology behind Saver For TUBE.",
+    "url": "https://saverfortube.com/about-us"
+  },
+  {
+    "@type": "SiteNavigationElement",
+    "@id": "https://saverfortube.com/#nav-contact",
+    "name": "Contact",
+    "description": "Get in touch with Saver For TUBE support for inquiries and assistance.",
+    "url": "https://saverfortube.com/contact"
+  },
+  {
+    "@type": "SiteNavigationElement",
+    "@id": "https://saverfortube.com/#nav-privacy",
+    "name": "Privacy Policy",
+    "description": "Review the privacy and data security policies of Saver For TUBE.",
+    "url": "https://saverfortube.com/privacy-policy"
+  },
+  {
+    "@type": "SiteNavigationElement",
+    "@id": "https://saverfortube.com/#nav-terms",
+    "name": "Terms of Use",
+    "description": "Review the terms and conditions for using the Saver For TUBE audio converter.",
+    "url": "https://saverfortube.com/terms-of-use"
+  }
+];
+
+// Combine base graph with any page-specific jsonLd (e.g. FAQPage)
+let finalSchemaGraph = [...baseSchemaGraph];
+if (jsonLd) {
+  if (Array.isArray(jsonLd)) {
+    finalSchemaGraph.push(...jsonLd);
+  } else if (jsonLd["@type"]) {
+    finalSchemaGraph.push(jsonLd);
+  }
+}
+
+const completeJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": finalSchemaGraph
+};
+---
+
+<!doctype html>
+<html lang={lang} class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
+    <!-- Google Font: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Favicon & PWA Manifest -->
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="SF-TUBE" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="Saver For TUBE" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- JSON-LD Structured Data for Google Sitelinks & Knowledge Graph -->
+    <script type="application/ld+json" set:html={JSON.stringify(completeJsonLd)} />
+
+    <!-- Immediate Theme Initialization Script (Blocks render to avoid flash) -->
+    <script is:inline>
+      (function() {
+        var saved = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+    <!-- Google tag (gtag.js) -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-XXRGB9JR1J"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXRGB9JR1J');
+    </script>
+  </head>
+  <body class="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-red-500/20 selection:text-red-500">
+    <Header currentPath={currentPath} />
+    <main class="flex-1 w-full">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

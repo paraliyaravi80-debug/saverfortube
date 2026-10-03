@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+server/cache/
+*.mp3
+.wrangler/
+01safefetchhub.com - Copy/
+.temporary_reference_media_content

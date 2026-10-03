@@ -1,0 +1,777 @@
+---
+// Converter.astro - Pure Client-Side & Dedicated Server Connected YouTube to MP3 Converter
+interface Props {
+  badgeText?: string;
+  formTitle?: string;
+  formSubtitle?: string;
+  placeholder?: string;
+  pasteBtnText?: string;
+  qualityLabel?: string;
+  ultraHdLabel?: string;
+  highQualityLabel?: string;
+  standardLabel?: string;
+  compactLabel?: string;
+  voiceLabel?: string;
+  convertBtnText?: string;
+  errorMessage?: string;
+  downloadBtnText?: string;
+  convertAnotherText?: string;
+  livePreviewText?: string;
+  readyToPlayText?: string;
+  clickPlayText?: string;
+  verifiedTrackText?: string;
+  progressStatusText?: string;
+  startingDownloadText?: string;
+  highSpeedStreamText?: string;
+  noteText?: string;
+}
+
+const {
+  badgeText = 'Videos & Shorts Supported',
+  formTitle = 'Paste YouTube Link',
+  formSubtitle = 'Convert standard YouTube videos, music tracks & Shorts into studio-grade 320kbps MP3',
+  placeholder = 'https://www.youtube.com/watch?v=... or shorts URL',
+  pasteBtnText = 'Paste',
+  qualityLabel = 'Select MP3 Audio Quality',
+  ultraHdLabel = 'Ultra HD',
+  highQualityLabel = 'High Quality',
+  standardLabel = 'Standard',
+  compactLabel = 'Compact',
+  voiceLabel = 'Voice / Speech',
+  convertBtnText = 'Convert to MP3',
+  errorMessage = 'Please enter a valid YouTube link.',
+  downloadBtnText = 'Download MP3',
+  convertAnotherText = 'Convert Another',
+  livePreviewText = 'Live Audio Preview',
+  readyToPlayText = 'Ready to Play',
+  clickPlayText = 'Click Play to listen to preview',
+  verifiedTrackText = 'Verified Track',
+  progressStatusText = 'Connecting to high-speed audio converter...',
+  startingDownloadText = 'Starting download...',
+  highSpeedStreamText = 'High-Speed Stream',
+  noteText = 'Real full-length MP3 extracted directly by Saver For TUBE engine. High fidelity audio.',
+} = Astro.props;
+---
+
+<div class="w-full max-w-3xl mx-auto">
+  <!-- Converter Tool Card -->
+  <div class="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-2xl p-5 sm:p-8">
+    
+    <!-- Header inside tool -->
+    <div class="text-center mb-6">
+      <!-- Badge (Pure Text Only) -->
+      <div class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 mb-3">
+        {badgeText}
+      </div>
+      
+      <h2 class="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+        {formTitle}
+      </h2>
+      <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+        {formSubtitle}
+      </p>
+    </div>
+
+    <!-- Input Box Form -->
+    <form id="converter-form" class="space-y-4" onsubmit="return false;">
+      <div class="relative flex items-center">
+        <!-- Input Icon -->
+        <div class="absolute left-4 text-zinc-400 dark:text-zinc-500 pointer-events-none">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+        </div>
+
+        <!-- Text Input -->
+        <input
+          id="yt-url-input"
+          type="url"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder={placeholder}
+          class="w-full pl-12 pr-28 py-3.5 sm:py-4 text-sm sm:text-base bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:border-red-500 dark:focus:border-red-500"
+          required
+        />
+
+        <!-- Action buttons inside input right -->
+        <div class="absolute right-2.5 flex items-center gap-1.5">
+          <!-- Clear Button -->
+          <button
+            id="btn-clear"
+            type="button"
+            class="hidden px-2.5 py-1.5 text-xs text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
+            aria-label="Clear input"
+          >
+            ✕
+          </button>
+          <!-- Paste Button -->
+          <button
+            id="btn-paste"
+            type="button"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white cursor-pointer flex items-center gap-1"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span>{pasteBtnText}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quality Bitrate Selector -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          {qualityLabel}
+        </label>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="quality-selector">
+          <button
+            type="button"
+            data-quality="320"
+            class="quality-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-red-500 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 cursor-pointer text-center"
+          >
+            <div class="font-bold">320 kbps</div>
+            <div class="text-[10px] text-red-500/80">{ultraHdLabel}</div>
+          </button>
+          <button
+            type="button"
+            data-quality="256"
+            class="quality-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-pointer text-center"
+          >
+            <div class="font-bold">256 kbps</div>
+            <div class="text-[10px] text-zinc-500">{highQualityLabel}</div>
+          </button>
+          <button
+            type="button"
+            data-quality="192"
+            class="quality-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-pointer text-center"
+          >
+            <div class="font-bold">192 kbps</div>
+            <div class="text-[10px] text-zinc-500">{standardLabel}</div>
+          </button>
+          <button
+            type="button"
+            data-quality="128"
+            class="quality-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-pointer text-center"
+          >
+            <div class="font-bold">128 kbps</div>
+            <div class="text-[10px] text-zinc-500">{compactLabel}</div>
+          </button>
+          <button
+            type="button"
+            data-quality="64"
+            class="quality-btn col-span-2 sm:col-span-1 px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-pointer text-center"
+          >
+            <div class="font-bold">64 kbps</div>
+            <div class="text-[10px] text-zinc-500">{voiceLabel}</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Convert Button -->
+      <button
+        id="btn-convert"
+        type="button"
+        class="w-full py-3.5 sm:py-4 px-6 rounded-xl font-semibold text-sm sm:text-base text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        <span>{convertBtnText}</span>
+      </button>
+    </form>
+
+    <!-- Error message display -->
+    <div id="error-box" class="hidden mt-4 p-3.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs sm:text-sm text-red-600 dark:text-red-400 flex items-center gap-2.5">
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span id="error-message">{errorMessage}</span>
+    </div>
+
+    <!-- Live Video Preview & Conversion Status Card -->
+    <div id="preview-card" class="hidden mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 max-w-full overflow-hidden">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 max-w-full overflow-hidden">
+        <!-- Video Thumbnail -->
+        <div class="relative w-full sm:w-40 aspect-video rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 shrink-0 bg-zinc-200 dark:bg-zinc-800">
+          <img
+            id="video-thumbnail"
+            src=""
+            alt="YouTube Video Thumbnail"
+            class="w-full h-full object-cover"
+            loading="lazy"
+          />
+          <div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-black/80 text-white">
+            <span id="selected-quality-tag">320 KBPS</span>
+          </div>
+        </div>
+
+        <!-- Video Info -->
+        <div class="flex-1 min-w-0 max-w-full overflow-hidden space-y-1">
+          <div class="flex items-center gap-2">
+            <span id="track-type-badge" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 shrink-0">
+              {verifiedTrackText}
+            </span>
+            <span id="video-duration-badge" class="hidden text-[11px] font-medium text-zinc-500 dark:text-zinc-400 shrink-0">
+              0:00
+            </span>
+          </div>
+          <h3 id="video-title" class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white truncate block max-w-full">
+            Loading video title...
+          </h3>
+          <p id="video-author" class="text-xs text-zinc-500 dark:text-zinc-400 truncate block max-w-full">
+            YouTube Audio Stream
+          </p>
+        </div>
+      </div>
+
+      <!-- Conversion Progress Container -->
+      <div id="progress-container" class="hidden mt-5 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span id="progress-status-text" class="font-medium text-zinc-700 dark:text-zinc-300">
+            Connecting to high-speed audio converter...
+          </span>
+          <span id="progress-percent" class="font-bold text-red-600 dark:text-red-400">
+            0%
+          </span>
+        </div>
+        <!-- Progress bar line -->
+        <div class="w-full h-2 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+          <div
+            id="progress-bar"
+            class="h-full bg-red-600 dark:bg-red-500 rounded-full transition-all duration-300 ease-out"
+            style="width: 0%;"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Download Action Buttons (shown when conversion completes) -->
+      <div id="download-area" class="hidden mt-6 space-y-4">
+        
+        <!-- Interactive In-Browser Live Audio Player Preview -->
+        <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              {livePreviewText}
+            </span>
+            <span id="player-status-badge" class="text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">{readyToPlayText}</span>
+          </div>
+          
+          <!-- Audio Player Control Bar -->
+          <div class="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 max-w-full overflow-hidden">
+            <!-- Play/Pause Button -->
+            <button
+              id="btn-play-preview"
+              type="button"
+              class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white flex items-center justify-center shrink-0 cursor-pointer"
+              aria-label="Play audio preview"
+            >
+              <svg id="play-icon" class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <svg id="pause-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+              </svg>
+            </button>
+
+            <!-- Track Info & Dynamic Equalizer -->
+            <div class="flex-1 min-w-0 max-w-full overflow-hidden">
+              <p id="player-track-name" class="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white truncate block max-w-full">
+                {clickPlayText}
+              </p>
+              <p id="player-sub-text" class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate block max-w-full">
+                Original YouTube audio stream
+              </p>
+            </div>
+
+            <!-- Sound Wave Equalizer (Active on play) -->
+            <div id="sound-wave" class="hidden items-center gap-1 h-4 shrink-0">
+              <span class="w-1 bg-red-500 h-2 rounded-full animate-bounce"></span>
+              <span class="w-1 bg-red-500 h-4 rounded-full animate-bounce [animation-delay:0.15s]"></span>
+              <span class="w-1 bg-red-500 h-3 rounded-full animate-bounce [animation-delay:0.3s]"></span>
+              <span class="w-1 bg-red-500 h-5 rounded-full animate-bounce [animation-delay:0.1s]"></span>
+            </div>
+          </div>
+
+          <!-- Hidden YouTube Audio Stream Player Container -->
+          <div id="yt-player-container" class="w-0 h-0 overflow-hidden opacity-0 pointer-events-none"></div>
+        </div>
+
+        <!-- Live Real-Time Downloading Progress Card with MB Counter -->
+        <div id="download-progress-card" class="hidden p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/60 dark:bg-emerald-950/30 space-y-2.5">
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="dl-live-status-text" class="font-semibold text-emerald-800 dark:text-emerald-300">
+                Starting download...
+              </span>
+            </div>
+            <!-- MB counter and percentage -->
+            <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">
+              <span id="dl-mb-counter">0.0 MB</span>
+              <span>•</span>
+              <span id="dl-percent-text">0%</span>
+            </div>
+          </div>
+
+          <!-- Live Download Progress Line -->
+          <div class="w-full h-2.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 overflow-hidden">
+            <div
+              id="dl-progress-bar-fill"
+              class="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full transition-all duration-150 ease-out"
+              style="width: 0%;"
+            ></div>
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+            <span id="dl-filename-preview" class="truncate max-w-[280px] sm:max-w-md font-medium text-zinc-700 dark:text-zinc-300">
+              Audio track
+            </span>
+            <span id="dl-speed-badge" class="font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+              High-Speed Stream
+            </span>
+          </div>
+        </div>
+
+        <!-- Single Direct Full MP3 Download Button (Real 100% Song Extraction) -->
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <button
+            id="btn-download-mp3"
+            type="button"
+            class="w-full sm:flex-1 py-3.5 px-6 rounded-xl font-semibold text-sm sm:text-base text-white bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <svg id="dl-icon-idle" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <svg id="dl-icon-spinner" class="w-5 h-5 hidden animate-spin text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="dl-button-text">Download <span id="download-quality-label">320kbps</span> MP3</span>
+          </button>
+
+          <button
+            id="btn-convert-another"
+            type="button"
+            class="w-full sm:w-auto py-3.5 px-5 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+          >
+            {convertAnotherText}
+          </button>
+        </div>
+
+        <!-- Note -->
+        <div class="text-center">
+          <p class="text-[11px] text-zinc-400 dark:text-zinc-500">
+            {noteText}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Converter Logic Script -->
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputUrl = document.getElementById('yt-url-input');
+    const btnClear = document.getElementById('btn-clear');
+    const btnPaste = document.getElementById('btn-paste');
+    const btnConvert = document.getElementById('btn-convert');
+    const errorBox = document.getElementById('error-box');
+    const errorMessage = document.getElementById('error-message');
+    const previewCard = document.getElementById('preview-card');
+    const videoThumbnail = document.getElementById('video-thumbnail');
+    const videoTitle = document.getElementById('video-title');
+    const videoAuthor = document.getElementById('video-author');
+    const videoDurationBadge = document.getElementById('video-duration-badge');
+    const trackTypeBadge = document.getElementById('track-type-badge');
+    const selectedQualityTag = document.getElementById('selected-quality-tag');
+    const downloadQualityLabel = document.getElementById('download-quality-label');
+    const qualityButtons = document.querySelectorAll('.quality-btn');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressStatusText = document.getElementById('progress-status-text');
+    const progressPercent = document.getElementById('progress-percent');
+    const downloadArea = document.getElementById('download-area');
+    const btnDownloadMp3 = document.getElementById('btn-download-mp3');
+    const dlButtonText = document.getElementById('dl-button-text');
+    const dlIconIdle = document.getElementById('dl-icon-idle');
+    const dlIconSpinner = document.getElementById('dl-icon-spinner');
+    const btnConvertAnother = document.getElementById('btn-convert-another');
+
+    // Downloading live indicator elements
+    const downloadProgressCard = document.getElementById('download-progress-card');
+    const dlLiveStatusText = document.getElementById('dl-live-status-text');
+    const dlMbCounter = document.getElementById('dl-mb-counter');
+    const dlPercentText = document.getElementById('dl-percent-text');
+    const dlProgressBarFill = document.getElementById('dl-progress-bar-fill');
+    const dlFilenamePreview = document.getElementById('dl-filename-preview');
+
+    // Audio Preview Controls
+    const btnPlayPreview = document.getElementById('btn-play-preview');
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    const playerTrackName = document.getElementById('player-track-name');
+    const playerSubText = document.getElementById('player-sub-text');
+    const playerStatusBadge = document.getElementById('player-status-badge');
+    const soundWave = document.getElementById('sound-wave');
+    const ytPlayerContainer = document.getElementById('yt-player-container');
+
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://127.0.0.1:5000'
+      : '';
+
+    let currentQuality = '320';
+    let currentVideoId = '';
+    let currentTrackTitle = 'YouTube Track';
+    let isPlaying = false;
+    const initialStatusText = playerStatusBadge ? playerStatusBadge.textContent : "Ready to Play";
+
+    // Quality selector logic
+    qualityButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const quality = btn.getAttribute('data-quality');
+        currentQuality = quality;
+        if (selectedQualityTag) {
+          selectedQualityTag.textContent = quality + ' KBPS';
+        }
+        if (downloadQualityLabel) {
+          downloadQualityLabel.textContent = quality + 'kbps';
+        }
+
+        qualityButtons.forEach((b) => {
+          b.className = 'quality-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-pointer text-center';
+        });
+
+        btn.className = 'quality-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border border-red-500 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 cursor-pointer text-center';
+      });
+    });
+
+    // YouTube Video ID Extractor
+    function extractYouTubeID(url) {
+      if (!url) return null;
+      const cleanUrl = url.trim();
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+      const match = cleanUrl.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // Hide error helper
+    function hideError() {
+      if (errorBox) errorBox.classList.add('hidden');
+    }
+
+    // Show error helper
+    function showError(msg) {
+      if (errorMessage) errorMessage.textContent = msg;
+      if (errorBox) errorBox.classList.remove('hidden');
+    }
+
+    // Auto-detect URL on typing / pasting
+    async function handleUrlChange() {
+      hideError();
+      const url = inputUrl.value.trim();
+
+      if (url.length > 0) {
+        if (btnClear) btnClear.classList.remove('hidden');
+      } else {
+        if (btnClear) btnClear.classList.add('hidden');
+        if (previewCard) previewCard.classList.add('hidden');
+        return;
+      }
+
+      const videoId = extractYouTubeID(url);
+      if (videoId) {
+        currentVideoId = videoId;
+        if (previewCard) previewCard.classList.remove('hidden');
+        if (videoThumbnail) videoThumbnail.src = 'https://img.youtube.com/vi/' + videoId + '/mqdefault.jpg';
+        if (videoTitle) videoTitle.textContent = 'Fetching track details...';
+        if (videoAuthor) videoAuthor.textContent = 'YouTube Audio Stream';
+        if (playerTrackName) playerTrackName.textContent = 'Fetching track title...';
+
+        // Update Shorts vs Standard Video Badge
+        const isShorts = url.toLowerCase().includes('shorts');
+        if (trackTypeBadge) {
+          if (isShorts) {
+            trackTypeBadge.innerHTML = '⚡ YouTube Shorts';
+            trackTypeBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40';
+          } else {
+            trackTypeBadge.innerHTML = '🎬 Verified Video';
+            trackTypeBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40';
+          }
+        }
+
+        // Fetch real video title & details
+        try {
+          const res = await fetch('https://noembed.com/embed?url=https://www.youtube.com/watch?v=' + videoId);
+          const data = await res.json();
+          if (data && data.title) {
+            currentTrackTitle = data.title;
+            if (videoTitle) videoTitle.textContent = data.title;
+            if (playerTrackName) playerTrackName.textContent = data.title;
+            if (videoAuthor) videoAuthor.textContent = data.author_name || 'YouTube Creator';
+            return;
+          }
+        } catch (e) {}
+
+        try {
+          const apiRes = await fetch(API_BASE + '/api/info?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + videoId));
+          if (apiRes.ok) {
+            const data = await apiRes.json();
+            if (data && data.title) {
+              currentTrackTitle = data.title;
+              if (videoTitle) videoTitle.textContent = data.title;
+              if (playerTrackName) playerTrackName.textContent = data.title;
+              if (videoAuthor) videoAuthor.textContent = data.author || 'YouTube Creator';
+              if (data.thumbnail && videoThumbnail) videoThumbnail.src = data.thumbnail;
+              return;
+            }
+          }
+        } catch (_) {}
+
+        currentTrackTitle = 'YouTube Audio (' + videoId + ')';
+        if (videoTitle) videoTitle.textContent = currentTrackTitle;
+        if (playerTrackName) playerTrackName.textContent = currentTrackTitle;
+      }
+    }
+
+    if (inputUrl) {
+      inputUrl.addEventListener('input', handleUrlChange);
+    }
+
+    // Clear button
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        inputUrl.value = '';
+        btnClear.classList.add('hidden');
+        if (previewCard) previewCard.classList.add('hidden');
+        if (downloadArea) downloadArea.classList.add('hidden');
+        if (progressContainer) progressContainer.classList.add('hidden');
+        if (downloadProgressCard) downloadProgressCard.classList.add('hidden');
+        stopAudioPreview();
+        hideError();
+        inputUrl.focus();
+      });
+    }
+
+    // Paste button
+    if (btnPaste) {
+      btnPaste.addEventListener('click', async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            inputUrl.value = text;
+            handleUrlChange();
+          }
+        } catch (err) {
+          inputUrl.focus();
+        }
+      });
+    }
+
+    // Convert Button Handler
+    if (btnConvert) {
+      btnConvert.addEventListener('click', async () => {
+        hideError();
+        const url = inputUrl.value.trim();
+        const videoId = extractYouTubeID(url);
+
+        if (!videoId) {
+          showError('Please enter a valid YouTube video or shorts URL.');
+          inputUrl.focus();
+          return;
+        }
+
+        // Show Progress & Reset Download area
+        if (progressContainer) progressContainer.classList.remove('hidden');
+        if (downloadArea) downloadArea.classList.add('hidden');
+        if (downloadProgressCard) downloadProgressCard.classList.add('hidden');
+        btnConvert.disabled = true;
+        btnConvert.classList.add('opacity-60', 'cursor-not-allowed');
+
+        // Progress animation steps
+        const steps = [
+          { pct: 25, text: 'Connecting to YouTube high-speed engine...' },
+          { pct: 55, text: 'Extracting full audio stream...' },
+          { pct: 85, text: 'Encoding to ' + currentQuality + 'kbps MP3 format...' },
+          { pct: 98, text: 'Finalizing full audio package...' },
+          { pct: 100, text: 'Audio converted successfully! Ready to download.' }
+        ];
+
+        for (let i = 0; i < steps.length; i++) {
+          await new Promise((r) => setTimeout(r, 300));
+          if (progressBar) progressBar.style.width = steps[i].pct + '%';
+          if (progressPercent) progressPercent.textContent = steps[i].pct + '%';
+          if (progressStatusText) progressStatusText.textContent = steps[i].text;
+        }
+
+        // Finish conversion
+        btnConvert.disabled = false;
+        btnConvert.classList.remove('opacity-60', 'cursor-not-allowed');
+        if (downloadArea) downloadArea.classList.remove('hidden');
+      });
+    }
+
+    // Audio Preview Play / Pause
+    function stopAudioPreview() {
+      isPlaying = false;
+      if (playIcon) playIcon.classList.remove('hidden');
+      if (pauseIcon) pauseIcon.classList.add('hidden');
+      if (soundWave) soundWave.classList.add('hidden');
+      if (playerStatusBadge) playerStatusBadge.textContent = initialStatusText;
+      if (playerSubText) playerSubText.textContent = 'Original YouTube audio stream';
+      if (ytPlayerContainer) ytPlayerContainer.innerHTML = '';
+    }
+
+    if (btnPlayPreview) {
+      btnPlayPreview.addEventListener('click', () => {
+        if (!currentVideoId) return;
+
+        if (isPlaying) {
+          stopAudioPreview();
+        } else {
+          isPlaying = true;
+          if (playIcon) playIcon.classList.add('hidden');
+          if (pauseIcon) pauseIcon.classList.remove('hidden');
+          if (soundWave) soundWave.classList.remove('hidden');
+          if (soundWave) soundWave.classList.add('flex');
+          if (playerStatusBadge) playerStatusBadge.textContent = 'Playing Audio';
+          if (playerSubText) playerSubText.textContent = 'Streaming live YouTube audio track';
+          if (ytPlayerContainer) {
+            ytPlayerContainer.innerHTML = '<iframe width="200" height="200" src="https://www.youtube-nocookie.com/embed/' + currentVideoId + '?autoplay=1&enablejsapi=1" allow="autoplay"></iframe>';
+          }
+        }
+      });
+    }
+
+    // Direct MP3 Download Logic with Live Stream MB Counter & Progress Bar
+    if (btnDownloadMp3) {
+      btnDownloadMp3.addEventListener('click', async () => {
+        if (!currentVideoId) return;
+
+        // Button Loading State
+        if (dlIconIdle) dlIconIdle.classList.add('hidden');
+        if (dlIconSpinner) dlIconSpinner.classList.remove('hidden');
+        if (dlButtonText) dlButtonText.textContent = 'Processing ' + currentQuality + 'kbps Stream...';
+        if (btnDownloadMp3) btnDownloadMp3.disabled = true;
+
+        // Show Live Download Progress Card
+        if (downloadProgressCard) downloadProgressCard.classList.remove('hidden');
+        if (dlProgressBarFill) dlProgressBarFill.style.width = '5%';
+        if (dlPercentText) dlPercentText.textContent = '5%';
+        if (dlMbCounter) dlMbCounter.textContent = 'Connecting...';
+        if (dlLiveStatusText) dlLiveStatusText.textContent = 'Requesting stream from server...';
+        if (dlFilenamePreview) dlFilenamePreview.textContent = currentTrackTitle + ' (' + currentQuality + 'kbps).mp3';
+
+        const downloadUrl = (API_BASE || '') + '/api/download?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + currentVideoId) + '&quality=' + currentQuality;
+
+        try {
+          const response = await fetch(downloadUrl);
+          const contentType = response.headers.get('content-type') || '';
+
+          if (!response.ok || contentType.includes('application/json') || contentType.includes('text/html')) {
+            let errText = 'Conversion busy. Please try again.';
+            try {
+              const errJson = await response.json();
+              if (errJson && errJson.error) errText = errJson.error;
+            } catch (_) {}
+            throw new Error(errText);
+          }
+
+          if (dlLiveStatusText) dlLiveStatusText.textContent = 'Downloading ' + currentQuality + 'kbps audio stream...';
+
+          const contentLength = response.headers.get('content-length');
+          const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+          const totalMb = totalBytes ? (totalBytes / (1024 * 1024)).toFixed(1) : null;
+
+          const reader = response.body.getReader();
+          const chunks = [];
+          let receivedBytes = 0;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            chunks.push(value);
+            receivedBytes += value.length;
+            const receivedMb = (receivedBytes / (1024 * 1024)).toFixed(1);
+
+            if (totalBytes) {
+              const pct = Math.min(99, Math.round((receivedBytes / totalBytes) * 100));
+              if (dlProgressBarFill) dlProgressBarFill.style.width = pct + '%';
+              if (dlPercentText) dlPercentText.textContent = pct + '%';
+              if (dlMbCounter) dlMbCounter.textContent = receivedMb + ' MB / ' + totalMb + ' MB';
+            } else {
+              if (dlMbCounter) dlMbCounter.textContent = receivedMb + ' MB';
+              if (dlProgressBarFill) dlProgressBarFill.style.width = '70%';
+              if (dlPercentText) dlPercentText.textContent = 'Processing';
+            }
+          }
+
+          // Construct pure audio Blob
+          const blob = new Blob(chunks, { type: 'audio/mpeg' });
+          const finalMb = (blob.size / (1024 * 1024)).toFixed(1);
+
+          if (blob.size < 50000) {
+            throw new Error('Audio stream unavailable. Please try another video.');
+          }
+
+          const objectUrl = URL.createObjectURL(blob);
+          if (dlProgressBarFill) dlProgressBarFill.style.width = '100%';
+          if (dlPercentText) dlPercentText.textContent = '100%';
+          if (dlMbCounter) dlMbCounter.textContent = finalMb + ' MB';
+          if (dlLiveStatusText) dlLiveStatusText.textContent = 'Download Complete! Saving file...';
+
+          const safeTitle = (currentTrackTitle || 'YouTube_Audio')
+            .replace(/[\/:*?"<>|]/g, '')
+            .trim()
+            .slice(0, 65);
+          const finalFileName = safeTitle + ' (' + currentQuality + 'kbps).mp3';
+
+          // Trigger direct in-page download (Never opens new tab)
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = objectUrl;
+          a.download = finalFileName;
+          document.body.appendChild(a);
+          a.click();
+
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
+            
+            if (dlIconIdle) dlIconIdle.classList.remove('hidden');
+            if (dlIconSpinner) dlIconSpinner.classList.add('hidden');
+            if (dlButtonText) dlButtonText.innerHTML = 'Downloaded <span id="download-quality-label">' + currentQuality + 'kbps</span> MP3';
+            if (btnDownloadMp3) btnDownloadMp3.disabled = false;
+            if (dlLiveStatusText) dlLiveStatusText.textContent = 'Saved to Downloads (' + finalMb + ' MB) ✅';
+          }, 600);
+
+        } catch (err) {
+          showError(err.message || 'Download failed. Please try again.');
+          if (dlIconIdle) dlIconIdle.classList.remove('hidden');
+          if (dlIconSpinner) dlIconSpinner.classList.add('hidden');
+          if (dlButtonText) dlButtonText.innerHTML = 'Download <span id="download-quality-label">' + currentQuality + 'kbps</span> MP3';
+          if (btnDownloadMp3) btnDownloadMp3.disabled = false;
+          if (downloadProgressCard) downloadProgressCard.classList.add('hidden');
+        }
+      });
+    }
+
+    // {convertAnotherText} button
+    if (btnConvertAnother) {
+      btnConvertAnother.addEventListener('click', () => {
+        inputUrl.value = '';
+        if (btnClear) btnClear.classList.add('hidden');
+        if (previewCard) previewCard.classList.add('hidden');
+        if (downloadArea) downloadArea.classList.add('hidden');
+        if (progressContainer) progressContainer.classList.add('hidden');
+        if (downloadProgressCard) downloadProgressCard.classList.add('hidden');
+        if (progressBar) progressBar.style.width = '0%';
+        stopAudioPreview();
+        inputUrl.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  });
+</script>

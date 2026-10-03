@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /404
+Disallow: /500
+
+# Host & Sitemap
+Host: https://saverfortube.com
+Sitemap: https://saverfortube.com/sitemap.xml

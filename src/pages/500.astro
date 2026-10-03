@@ -1,0 +1,34 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Server Error (500) - Saver For TUBE"
+  description="An internal server error occurred on Saver For TUBE."
+  canonicalUrl="https://saverfortube.com/500"
+>
+  <div class="max-w-xl mx-auto px-4 py-20 text-center space-y-6">
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 font-extrabold text-2xl flex items-center justify-center border border-red-200 dark:border-red-900/60">
+      500
+    </div>
+    <div class="space-y-2">
+      <h1 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">
+        Internal Server Error
+      </h1>
+      <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+        Something went wrong on our end. Please try refreshing the page or try again in a moment.
+      </p>
+    </div>
+    <div class="pt-2">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+      >
+        <span>Back to YouTube to MP3 Converter</span>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</Layout>

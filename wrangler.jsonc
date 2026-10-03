@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "saverfortube",
+  "main": "worker.js",
+  "compatibility_date": "2025-02-14",
+  "account_id": "11c3d2786249b82ae96883dd8a5da2f7",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
