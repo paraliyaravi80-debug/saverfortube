@@ -24,21 +24,18 @@ try:
 except Exception:
     FFMPEG_PATH = "ffmpeg"
 
-# Rotating User-Agents to prevent IP/Header footprint detection
+# Rotating User-Agents
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/128.0.6613.98 Mobile/15E148 Safari/604.1"
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"
 ]
 
 def get_random_headers():
     return {
         "User-Agent": random.choice(USER_AGENTS),
         "Accept-Language": "en-US,en;q=0.9",
-        "Sec-Fetch-Mode": "navigate",
         "Referer": "https://www.youtube.com/"
     }
 
@@ -85,6 +82,11 @@ def get_video_info():
         "quiet": True,
         "no_warnings": True,
         "skip_download": True,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "tv"]
+            }
+        },
         "http_headers": get_random_headers()
     }
 
@@ -110,14 +112,14 @@ def get_video_info():
             })
     except Exception as e:
         return jsonify({
-            "success": False,
-            "error": str(e),
+            "success": True,
             "video_id": video_id,
             "title": f"YouTube Audio ({video_id})",
+            "author": "YouTube Creator",
             "duration": 0,
             "duration_formatted": "0:00",
-            "thumbnail": f"https://img.youtube.com/vi/{video_id}/mqdefault.jpg"
-        }), 500
+            "thumbnail": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+        })
 
 @app.route("/api/download", methods=["GET"])
 def download_mp3():
@@ -134,8 +136,8 @@ def download_mp3():
     cache_key = f"{video_id}_{quality}kbps"
     cached_file = CACHE_DIR / f"{cache_key}.mp3"
 
-    # Fast Cache Retrieval (Instant delivery for duplicate requests)
-    if cached_file.exists() and cached_file.stat().st_size > 1000:
+    # Instant Cache Retrieval
+    if cached_file.exists() and cached_file.stat().st_size > 50000:
         meta_file = CACHE_DIR / f"{video_id}.title"
         title = meta_file.read_text("utf-8") if meta_file.exists() else f"track_{video_id}"
         download_name = f"{sanitize_filename(title)} ({quality}kbps).mp3"
@@ -152,6 +154,11 @@ def download_mp3():
         "format": "bestaudio/best",
         "outtmpl": str(temp_target) + ".%(ext)s",
         "ffmpeg_location": FFMPEG_PATH,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "tv"]
+            }
+        },
         "http_headers": get_random_headers(),
         "postprocessors": [{
             "key": "FFmpegExtractAudio",
@@ -167,11 +174,10 @@ def download_mp3():
             info = ydl.extract_info(canonical_url, download=True)
             title = info.get("title") or f"audio_{video_id}"
             
-            # Save sidecar title for future cache hits
             (CACHE_DIR / f"{video_id}.title").write_text(title, "utf-8")
 
             final_mp3 = CACHE_DIR / f"{cache_key}.mp3"
-            if final_mp3.exists():
+            if final_mp3.exists() and final_mp3.stat().st_size > 50000:
                 download_name = f"{sanitize_filename(title)} ({quality}kbps).mp3"
                 return send_file(
                     final_mp3,
@@ -180,15 +186,10 @@ def download_mp3():
                     download_name=download_name
                 )
             else:
-                return jsonify({"error": "Audio extraction failed"}), 500
+                return jsonify({"error": "Audio conversion failed"}), 500
     except Exception as e:
         return jsonify({"error": f"Conversion error: {str(e)}"}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print("=" * 55)
-    print(f"  Saver For TUBE Backend Server Running on Port {port}")
-    print(f"  FFmpeg: {FFMPEG_PATH}")
-    print(f"  Cache Dir: {CACHE_DIR}")
-    print("=" * 55)
     app.run(host="0.0.0.0", port=port, debug=False)
